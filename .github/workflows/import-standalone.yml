@@ -1,4 +1,4 @@
-# Bootstrap workflow: replaced by the imported standalone CI after completion.
+# Bootstrap workflow: source files are imported here; final CI is installed separately.
 name: Import standalone Vault Plugin Factory
 
 on:
@@ -28,7 +28,7 @@ jobs:
 
       - name: Replace target tree with standalone source
         run: |
-          rsync -a --delete --exclude='.git/' --exclude='_source/' _source/ ./
+          rsync -a --delete --exclude='.git/' --exclude='_source/' --exclude='.github/workflows/' _source/ ./
           rm -rf _source
 
       - name: Commit imported standalone tree
