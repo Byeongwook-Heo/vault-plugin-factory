@@ -1,4 +1,4 @@
-import type { VaultPluginSource, VaultPluginType } from "@security-portal/shared";
+import type { VaultPluginSource, VaultPluginType } from "../types";
 
 export type FactoryCatalogTier = "priority" | "conditional" | "lab";
 

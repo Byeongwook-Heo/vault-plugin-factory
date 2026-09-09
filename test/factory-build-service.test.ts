@@ -1,6 +1,6 @@
 import type { CodeBuildClient } from "@aws-sdk/client-codebuild";
 import type { S3Client } from "@aws-sdk/client-s3";
-import type { VaultPluginGeneratedFile, VaultPluginRequirements } from "@security-portal/shared";
+import type { VaultPluginGeneratedFile, VaultPluginRequirements } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import { FactoryBuildService } from "../src/plugin-factory/factory-build-service";
 

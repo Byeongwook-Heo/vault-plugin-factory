@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { VaultPluginFactoryJob } from "@security-portal/shared";
+import type { VaultPluginFactoryJob } from "../types";
 
 export type FactoryArtifactEvidence = {
   artifactBucket?: string;

@@ -1,4 +1,4 @@
-import type { VaultPluginGeneratedFile, VaultPluginRequirements, VaultPluginTemplate } from "@security-portal/shared";
+import type { VaultPluginGeneratedFile, VaultPluginRequirements, VaultPluginTemplate } from "../types";
 import { z } from "zod";
 
 export type FactoryChatLocale = "ko" | "en";

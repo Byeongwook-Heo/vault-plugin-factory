@@ -3,7 +3,7 @@ import type {
   VaultInventoryMount,
   VaultPluginCatalogEntry,
   VaultPluginType
-} from "@security-portal/shared";
+} from "../types";
 
 export interface ManagedPluginMountTarget {
   pluginName: string;

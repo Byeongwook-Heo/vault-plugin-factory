@@ -1,4 +1,4 @@
-import type { VaultPluginRequirements, VaultPluginTemplate } from "@security-portal/shared";
+import type { VaultPluginRequirements, VaultPluginTemplate } from "../types";
 
 export function githubPatRotationBackendFile(pluginName: string): string {
   return `package plugin

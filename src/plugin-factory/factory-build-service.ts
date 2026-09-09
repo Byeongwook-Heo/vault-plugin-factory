@@ -14,7 +14,7 @@ import type {
   VaultPluginGeneratedFile,
   VaultPluginRequirements,
   VaultPluginSecurityReview
-} from "@security-portal/shared";
+} from "../types";
 import JSZip from "jszip";
 import type { FactoryRepairResult } from "./factory-assistant";
 

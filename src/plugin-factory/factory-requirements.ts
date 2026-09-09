@@ -4,7 +4,7 @@ import type {
   VaultPluginRequirements,
   VaultPluginRequirementsInterview,
   VaultPluginTemplate
-} from "@security-portal/shared";
+} from "../types";
 import { z } from "zod";
 
 export type FactoryRequirementsLocale = "ko" | "en";

@@ -10,7 +10,7 @@ import type {
   VaultPluginRollbackPlan,
   VaultPluginSecurityReview,
   VaultPluginTemplate
-} from "@security-portal/shared";
+} from "../types";
 import {
   factoryExpansionReservedTargets,
   factoryExpansionTemplates,

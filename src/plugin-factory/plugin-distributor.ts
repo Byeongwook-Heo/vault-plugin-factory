@@ -3,7 +3,7 @@ import {
   SendCommandCommand,
   SSMClient
 } from "@aws-sdk/client-ssm";
-import type { VaultPluginBuildArtifact } from "@security-portal/shared";
+import type { VaultPluginBuildArtifact } from "../types";
 
 interface PluginDistributorConfig {
   mode: "mock" | "ssm";

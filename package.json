@@ -1,17 +1,35 @@
 {
-  "name": "vault-plugin-factory",
-  "private": true,
+  "name": "@vault-plugin-factory/core",
   "version": "0.1.0",
   "description": "Template-driven HashiCorp Vault custom plugin factory",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
   "packageManager": "pnpm@11.7.0",
   "scripts": {
-    "build": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core build",
-    "pretest": "pnpm --filter @security-portal/shared build",
-    "test": "pnpm --filter @vault-plugin-factory/core test",
-    "typecheck": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core typecheck",
-    "lint": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core lint"
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@aws-sdk/client-codebuild": "^3.1083.0",
+    "@aws-sdk/client-s3": "^3.1083.0",
+    "@aws-sdk/client-ssm": "^3.1084.0",
+    "jszip": "^3.10.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "@types/node": "^24.0.7",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
   }
 }

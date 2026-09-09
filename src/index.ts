@@ -1,3 +1,4 @@
+export * from "./types";
 export * from "./plugin-factory/catalog";
 export * from "./plugin-factory/expansion-catalog";
 export * from "./plugin-factory/factory-artifact";

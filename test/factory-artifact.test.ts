@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { VaultPluginFactoryJob } from "@security-portal/shared";
+import type { VaultPluginFactoryJob } from "../src/types";
 import { describe, expect, it } from "vitest";
 import { factoryArtifactEvidence, hasVerifiedFactoryArtifact } from "../src/plugin-factory/factory-artifact";
 

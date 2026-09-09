@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { VaultInventory } from "@security-portal/shared";
+import type { VaultInventory } from "../src/types";
 import { resolveManagedPluginMount } from "../src/vault/plugin-mount-guard";
 
 const inventory: VaultInventory = {
