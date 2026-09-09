@@ -2,68 +2,19 @@
 
 [한국어](README.md) · [English](README.en.md)
 
-A standalone Factory for designing, generating, validating, building, and preparing deployment artifacts for **HashiCorp Vault Custom Auth / Secrets / Database Plugins**.
+A standalone Factory for designing **HashiCorp Vault Custom Auth / Secrets / Database Plugins** and carrying them through requirements → generation → validation → build → artifact → deployment preparation.
 
-This codebase is extracted from the Plugin Factory capabilities that were previously embedded in `vault-security-portal`.
-
-## Why this is a separate project
-
-`vault-security-portal` owns credential request, approval, issuance, revocation, and audit workflows. Vault Plugin Factory owns the Plugin lifecycle: **design → generation → validation → artifact → distribution**. Separating the two allows independent deployment, upgrades, and privilege boundaries between a user-facing portal and a plugin build pipeline.
+The Factory core was extracted from `vault-security-portal`. The Portal owns user requests, approvals, audit, and Factory invocation; this repository owns the plugin lifecycle.
 
 ## Capabilities
 
-### Plugin Catalog
-
-- Auth / Secret / Database Plugin templates
-- official, partner, learning, and community source categories
-- plugin type, default mount path, command, version, and guardrail metadata
-- extension templates such as GitHub PAT rotation
-
-### Requirements Interview
-
-Structured collection of:
-
-- target system
-- authentication method
-- API base path
-- TTL
-- rotation and revoke strategies
-- mount path
-- environment (dev / staging / prod)
-
-Rules-based interviews are the default; Ollama-assisted flows can be enabled when configured.
-
-### Scaffold Generation
-
-Generate plugin source and operational artifacts from requirements and templates, including:
-
-- Go plugin scaffolds
-- HCL / Markdown / Makefile support files
-- dry-run plans
-- build/test plans
-- rollback plans
-- security-review findings
-
-### Build & Auto-repair
-
-- static or isolated AWS CodeBuild execution
-- `fmt`, `tidy`, `test`, and `build` validation
-- bounded repair attempts after build failures
-- S3 artifact storage
-- SHA-256 artifact integrity verification
-
-### Artifact Distribution
-
-Verified binaries can be distributed to Vault nodes through AWS SSM. The distributor downloads the S3 artifact, verifies SHA-256, and installs it into the configured Vault plugin directory.
-
-### Mount Guard
-
-The guard checks live Vault inventory before treating a mount as managed:
-
-- external plugin source
-- expected Auth/Secret mount kind
-- matching plugin name and mount path
-- matching Vault plugin-catalog entry
+- **Plugin Catalog** — Auth / Secret / Database templates, official/partner/learning/community classifications, guardrail metadata
+- **Requirements Interview** — target system, authentication, API path, TTL, rotation/revoke strategy, mount path, environment
+- **Scaffold Generation** — Go plugin code, HCL/Markdown/Makefile assets, dry-run, build/test, rollback, security review
+- **Build & Auto-repair** — isolated AWS CodeBuild execution, `fmt`/`tidy`/`test`/`build`, bounded repair attempts
+- **Artifact Verification** — S3 artifact and SHA-256 integrity checks
+- **Artifact Distribution** — Vault-node distribution through AWS SSM
+- **Mount Guard** — live Vault inventory and plugin-catalog checks before treating an external mount as managed
 
 ## Flow
 
@@ -82,9 +33,7 @@ Auto Repair (when needed)
     ↓
 SHA-256 Verified Artifact
     ↓
-S3 Artifact
-    ↓
-SSM Distribution
+S3 / SSM Distribution
     ↓
 Vault Plugin Registration / Mount
 ```
@@ -92,28 +41,28 @@ Vault Plugin Registration / Mount
 ## Repository structure
 
 ```text
-apps/factory/
-├── src/
-│   ├── plugin-factory/
-│   │   ├── catalog.ts
-│   │   ├── expansion-catalog.ts
-│   │   ├── factory-artifact.ts
-│   │   ├── factory-assistant.ts
-│   │   ├── factory-build-service.ts
-│   │   ├── factory-requirements.ts
-│   │   ├── github-pat-rotation-template.ts
-│   │   └── plugin-distributor.ts
-│   └── vault/
-│       └── plugin-mount-guard.ts
-└── test/
+src/
+├── index.ts
+├── types.ts
+├── plugin-factory/
+│   ├── catalog.ts
+│   ├── expansion-catalog.ts
+│   ├── factory-artifact.ts
+│   ├── factory-assistant.ts
+│   ├── factory-build-service.ts
+│   ├── factory-requirements.ts
+│   ├── github-pat-rotation-template.ts
+│   └── plugin-distributor.ts
+└── vault/
+    └── plugin-mount-guard.ts
 
-packages/shared/
-└── Shared Plugin Factory and Vault inventory types
-
-infra/
-├── aws/       # S3 artifacts, CodeBuild, Factory runtime IAM policy
-└── vault/     # least-privilege example for plugin catalog/mount operations
+test/                 # Factory core unit/regression tests
+infra/aws/            # S3 artifacts, CodeBuild, runtime IAM/SSM examples
+infra/vault/          # least-privilege plugin catalog/mount policy example
+docs/ARCHITECTURE.md  # caller, Factory, build, and Vault trust boundaries
 ```
+
+The root package is `@vault-plugin-factory/core` and has no dependency on Portal-specific stores or UI. Portal-specific orchestration/persistence logic such as `factory-job-recovery` remains outside the Factory core.
 
 ## Getting started
 
@@ -121,7 +70,7 @@ infra/
 
 - Node.js 24 recommended for `pnpm 11.7.0`
 - pnpm 11.x
-- Go toolchain or an AWS CodeBuild environment for plugin builds
+- Go toolchain or AWS CodeBuild for generated Vault plugin builds
 - AWS S3 / CodeBuild / SSM permissions and Vault plugin-directory configuration for real distribution
 
 ```bash
@@ -131,29 +80,43 @@ pnpm test
 pnpm build
 ```
 
+Build output is written to `dist/`.
+
+## Consume from another project
+
+Pin a validated Git commit when consuming the package directly from GitHub.
+
+```json
+{
+  "dependencies": {
+    "@vault-plugin-factory/core": "github:Byeongwook-Heo/vault-plugin-factory#<commit-sha>"
+  }
+}
+```
+
+For integrations and production-oriented use, pin a reviewed commit or release/tag instead of following `main` implicitly.
+
 ## Deployment assets
 
-- [AWS Factory Build Infrastructure](infra/aws/README.md): S3, CodeBuild, and Factory runtime IAM/SSM permissions
-- [Vault Plugin Deployment Policy](infra/vault/README.md): example policy for plugin catalog registration and `factory-lab/*` mounts
-- [Architecture](docs/ARCHITECTURE.md): caller, Factory, build environment, and Vault deployment trust boundaries
+- [AWS Factory Build Infrastructure](infra/aws/README.md) — S3, CodeBuild, Factory runtime IAM/SSM
+- [Vault Plugin Deployment Policy](infra/vault/README.md) — plugin catalog registration and `factory-lab/*` mount policy example
+- [Architecture](docs/ARCHITECTURE.md) — caller, Factory, build environment, and Vault deployment boundaries
 
 ## Operating modes
-
-The Factory core is independent from the Portal UI and can be consumed as a library/service layer.
 
 - Requirements: `rules` / `ollama`
 - Assistant: `rules` / `ollama`
 - Build: `static` / `codebuild`
 - Distribution: `mock` / `ssm`
 
-Production Vault registration and mount operations should be performed through a separately authorized deployment adapter or an approved calling application.
+Production Vault registration and mount operations should be performed through an approved deployment adapter or calling application.
 
 ## Responsibility boundaries
 
 | Project | Responsibility |
 | --- | --- |
-| `vault-plugin-factory` | templates, generation, build, artifact, distribution, guardrails |
-| `vault-security-portal` | user requests, approvals, credential lifecycle, audit, Factory UI/client |
+| `vault-plugin-factory` | templates, generation, build, artifacts, distribution, guardrails |
+| `vault-security-portal` | user requests, approvals, credential lifecycle, audit, Factory invocation/UI |
 | `hashicorp-enterprise-aws-lab` | executable AWS/Vault/Terraform infrastructure labs |
 | `Hashicorp-` | product guides and operational runbooks |
 
@@ -163,13 +126,9 @@ Production Vault registration and mount operations should be performed through a
 - Keep generated source and build artifacts separate.
 - Verify artifact SHA-256 before distribution.
 - Separate build permissions from Vault runtime permissions.
-- Restrict plugin distribution, registration, and mount operations with least privilege.
-- Re-check live inventory before changing or removing a mount.
-- Do not treat development Mock/Rules results as production validation evidence.
-
-## Extraction scope
-
-Portal-specific state-recovery logic such as `factory-job-recovery` is intentionally excluded from the Factory core because it directly depends on the Portal store. Job orchestration and persistence belong to the calling application; the Factory focuses on generation, builds, artifacts, and distribution.
+- Restrict plugin registration, distribution, and mount operations with least privilege.
+- Re-check live inventory before changing or removing an existing mount.
+- Do not treat Mock/Rules results as production validation evidence.
 
 ## Related projects
 
@@ -179,4 +138,4 @@ Portal-specific state-recovery logic such as `factory-job-recovery` is intention
 
 ## Scope and limitations
 
-This project is a lab and extension foundation for Vault custom plugin development and validation. Before production use, independently verify source review, Vault-version compatibility, Plugin API expectations, permissions, TLS, build supply-chain controls, and rollback procedures.
+This project is an extension foundation for Vault custom plugin development and validation. Before production use, independently verify source review, Vault-version and Plugin-API compatibility, least privilege, TLS, build supply-chain controls, and rollback procedures.
