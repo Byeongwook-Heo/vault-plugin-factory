@@ -1,0 +1,17 @@
+{
+  "name": "vault-plugin-factory",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Template-driven HashiCorp Vault custom plugin factory",
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "build": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core build",
+    "pretest": "pnpm --filter @security-portal/shared build",
+    "test": "pnpm --filter @vault-plugin-factory/core test",
+    "typecheck": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core typecheck",
+    "lint": "pnpm --filter @security-portal/shared build && pnpm --filter @vault-plugin-factory/core lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
