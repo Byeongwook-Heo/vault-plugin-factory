@@ -1,3 +1,4 @@
+# Bootstrap workflow: replaced by the imported standalone CI after completion.
 name: Import standalone Vault Plugin Factory
 
 on:
