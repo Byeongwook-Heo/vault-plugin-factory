@@ -1,0 +1,111 @@
+name: Refactor standalone package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/refactor-package.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Convert monorepo export into self-contained package
+        run: |
+          set -euo pipefail
+
+          rm -rf src test
+          cp -a apps/factory/src src
+          cp -a apps/factory/test test
+          cp packages/shared/src/index.ts src/types.ts
+
+          grep -rl 'from "@security-portal/shared"' src | xargs -r sed -i 's#from "@security-portal/shared"#from "../types"#g'
+          grep -rl 'from "@security-portal/shared"' test | xargs -r sed -i 's#from "@security-portal/shared"#from "../src/types"#g'
+
+          if ! grep -q 'export \* from "./types";' src/index.ts; then
+            tmp_file=$(mktemp)
+            printf 'export * from "./types";\n' > "$tmp_file"
+            cat src/index.ts >> "$tmp_file"
+            mv "$tmp_file" src/index.ts
+          fi
+
+          cat > package.json <<'JSON'
+          {
+            "name": "@vault-plugin-factory/core",
+            "version": "0.1.0",
+            "description": "Template-driven HashiCorp Vault custom plugin factory",
+            "main": "dist/index.js",
+            "types": "dist/index.d.ts",
+            "exports": {
+              ".": {
+                "types": "./dist/index.d.ts",
+                "require": "./dist/index.js",
+                "default": "./dist/index.js"
+              }
+            },
+            "files": ["dist"],
+            "packageManager": "pnpm@11.7.0",
+            "scripts": {
+              "build": "tsc -p tsconfig.json",
+              "typecheck": "tsc -p tsconfig.json --noEmit",
+              "lint": "tsc -p tsconfig.json --noEmit",
+              "test": "vitest run",
+              "prepare": "npm run build"
+            },
+            "dependencies": {
+              "@aws-sdk/client-codebuild": "^3.1083.0",
+              "@aws-sdk/client-s3": "^3.1083.0",
+              "@aws-sdk/client-ssm": "^3.1084.0",
+              "jszip": "^3.10.1",
+              "zod": "^3.23.8"
+            },
+            "devDependencies": {
+              "@types/node": "^24.0.7",
+              "typescript": "^5.8.3",
+              "vitest": "^2.1.9"
+            },
+            "pnpm": {
+              "onlyBuiltDependencies": ["esbuild"]
+            }
+          }
+          JSON
+
+          cat > tsconfig.json <<'JSON'
+          {
+            "extends": "./tsconfig.base.json",
+            "compilerOptions": {
+              "outDir": "dist",
+              "rootDir": "src",
+              "module": "CommonJS",
+              "moduleResolution": "Node",
+              "declaration": true
+            },
+            "include": ["src/**/*.ts"]
+          }
+          JSON
+
+          rm -rf apps packages pnpm-workspace.yaml
+
+      - name: Validate self-contained package
+        run: |
+          corepack enable
+          pnpm install --no-frozen-lockfile
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          test -f dist/index.js
+          test -f dist/index.d.ts
+
+      - name: Commit refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "refactor: make Factory core self-contained"
+          git push origin HEAD:main
